@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -19,6 +20,8 @@ public class RPGItemCreator : EditorWindow
     private TextField itemNameField;
     private IntegerField itemIDField;
     private ObjectField prefabField;
+    private DropdownField itemTypeField;
+    
     // Weapon Stats
     private IntegerField stackSizeField;
     private IntegerField rarityField;
@@ -164,7 +167,6 @@ public class RPGItemCreator : EditorWindow
         
         m_RightPane.Add(buttonContainer);
         
-        // Build the detail UI
         BuildDetailPane();
     }
     
@@ -207,7 +209,12 @@ public class RPGItemCreator : EditorWindow
             allowSceneObjects = false
         };
         AddLabeledField(generalSettingsFoldout, "Prefab", prefabField);
-
+        
+        // Create a list of choices from the enum
+        var itemTypeChoices = new List<string>(Enum.GetNames(typeof(ItemType)));
+        itemTypeField = new DropdownField("", itemTypeChoices, 0);
+        AddLabeledField(generalSettingsFoldout, "Item Type", itemTypeField);
+        
         // Weapon Stats
         var weaponStatsFoldout = new Foldout { text = "Weapon Stats" };
         ApplyHeaderStyle(weaponStatsFoldout);
@@ -323,7 +330,14 @@ public class RPGItemCreator : EditorWindow
         itemNameField.RegisterValueChangedCallback(evt => UpdateItemName(evt.newValue));
         itemIDField.RegisterValueChangedCallback(evt => UpdateItemID(evt.newValue));
         prefabField.RegisterValueChangedCallback(evt => UpdatePrefab(evt.newValue as GameObject));
-
+        itemTypeField.RegisterValueChangedCallback(evt => {
+            // Parse the selected string back to ItemType
+            if (Enum.TryParse(evt.newValue, out ItemType newItemType))
+            {
+                UpdateItemType(newItemType);
+            }
+        });
+        
         stackSizeField.RegisterValueChangedCallback(evt => UpdateStackSize(evt.newValue));
         rarityField.RegisterValueChangedCallback(evt => UpdateRarity(evt.newValue));
         attackPowerField.RegisterValueChangedCallback(evt => UpdateAttackPower(evt.newValue));
@@ -399,7 +413,10 @@ public class RPGItemCreator : EditorWindow
         }
         else
         {
-            leftPane.itemsSource = itemContainer.items.Where(item => item.generalSettings.itemName.ToLower().Contains(searchTerm.ToLower())).ToList();
+            leftPane.itemsSource = itemContainer.items
+                .Where(item => item.generalSettings.itemName.ToLower().Contains(searchTerm.ToLower()) 
+                               || item.generalSettings.itemID.ToString().Contains(searchTerm))
+                .ToList();
         }
         leftPane.Rebuild();
     }
@@ -473,7 +490,8 @@ public class RPGItemCreator : EditorWindow
         itemNameField.SetValueWithoutNotify(item.generalSettings.itemName);
         itemIDField.SetValueWithoutNotify(item.generalSettings.itemID);
         prefabField.SetValueWithoutNotify(item.generalSettings.prefab);
-
+        itemTypeField.SetValueWithoutNotify(item.generalSettings.itemType.ToString());
+        
         stackSizeField.SetValueWithoutNotify(item.weaponStats.stackSize);
         rarityField.SetValueWithoutNotify(item.weaponStats.rarity);
         attackPowerField.SetValueWithoutNotify(item.weaponStats.attackPower);
@@ -513,6 +531,7 @@ public class RPGItemCreator : EditorWindow
         itemNameField.SetValueWithoutNotify("");
         itemIDField.SetValueWithoutNotify(0);
         prefabField.SetValueWithoutNotify(null);
+        itemTypeField.SetValueWithoutNotify(null);
 
         stackSizeField.SetValueWithoutNotify(0);
         rarityField.SetValueWithoutNotify(0);
@@ -588,9 +607,11 @@ public class RPGItemCreator : EditorWindow
         if (selectedIndex >= 0 && selectedIndex < itemContainer.items.Count)
         {
             Item item = itemContainer.items[selectedIndex];
+            item.generalSettings.previousFilePath = ItemSerialization.GetItemPath(item);
             item.generalSettings.itemName = newName;
             itemContainer.items[selectedIndex] = item;
             leftPane.Rebuild();  // Refresh the ListView
+            
         }
     }
 
@@ -607,6 +628,7 @@ public class RPGItemCreator : EditorWindow
             }
 
             Item item = itemContainer.items[selectedIndex];
+            item.generalSettings.previousFilePath = ItemSerialization.GetItemPath(item);
             item.generalSettings.itemID = newID;
             itemContainer.items[selectedIndex] = item;
         }
@@ -622,6 +644,16 @@ public class RPGItemCreator : EditorWindow
         }
     }
 
+    private void UpdateItemType(ItemType newItemType)
+    {
+        if (selectedIndex >= 0 && selectedIndex < itemContainer.items.Count)
+        {
+            Item item = itemContainer.items[selectedIndex];
+            item.generalSettings.itemType = newItemType;
+            itemContainer.items[selectedIndex] = item;
+        }    
+    }
+    
     private void UpdateStackSize(int newStackSize)
     {
         if (selectedIndex >= 0 && selectedIndex < itemContainer.items.Count)

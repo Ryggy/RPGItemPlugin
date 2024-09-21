@@ -6,7 +6,8 @@
                 "itemID": 1,
                 "prefab": {
                     "instanceID": 23476
-                }
+                },
+                "itemType": 0
             },
             "weaponStats": {
                 "stackSize": 1,
@@ -53,7 +54,8 @@
                 "itemID": 2,
                 "prefab": {
                     "instanceID": 23900
-                }
+                },
+                "itemType": 0
             },
             "weaponStats": {
                 "stackSize": 1,
@@ -100,7 +102,8 @@
                 "itemID": 3,
                 "prefab": {
                     "instanceID": 23970
-                }
+                },
+                "itemType": 1
             },
             "weaponStats": {
                 "stackSize": 0,

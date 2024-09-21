@@ -1,6 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
+
+public enum ItemType{
+    Weapon,
+    Armour,
+    NPC
+}
 
 [System.Serializable]
 public struct Item
@@ -18,7 +25,9 @@ public struct GeneralSettings
 {
     public string itemName;
     public int itemID;
-    public GameObject prefab;  
+    public string previousFilePath;
+    public GameObject prefab;
+    public ItemType itemType;
 }
 
 [System.Serializable]
