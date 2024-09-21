@@ -84,32 +84,48 @@ public class RPGItemCreator : EditorWindow
         // Create a two-pane view with the left pane being fixed.
         var splitView = new TwoPaneSplitView(0, 300, TwoPaneSplitViewOrientation.Horizontal);
         rootVisualElement.Add(splitView);
+       
+        // Create a vertical container for the search bar and ListView
+        var leftPaneContainer = new VisualElement();
+        leftPaneContainer.style.flexDirection = FlexDirection.Column;  // Ensure vertical stacking
+        splitView.Add(leftPaneContainer);
+        
+        leftPaneContainer.style.marginTop = 10;
+        leftPaneContainer.style.marginLeft = 5;
+        leftPaneContainer.style.marginRight = 5;
+        leftPaneContainer.style.marginBottom = 10;
         
         // Add a search bar above the ListView
         searchField = new TextField("Search");
+        ApplyHeaderStyle(searchField);
+        searchField.style.marginBottom = 5;  // add some spacing between search bar and list
         searchField.RegisterValueChangedCallback(evt => FilterList(evt.newValue));
-        splitView.Insert(0, searchField);  // Insert at the top
+        leftPaneContainer.Add(searchField);  // Add the search bar to the container
         
         // Left pane for the list of items
-        leftPane = new ListView(itemContainer.items, 20, MakeItem, BindItem);
+        leftPane = new ListView(itemContainer.items, 75, MakeItem, BindItem);
         leftPane.selectionType = SelectionType.Single;
-        leftPane.onSelectionChange += OnItemSelected;
-        splitView.Add(leftPane);
-
+        leftPane.selectionChanged += OnItemSelected;
+        leftPaneContainer.Add(leftPane);  // Add the ListView below the search bar in the container
+        
+        leftPane.style.marginTop = 10;
+        leftPane.style.marginLeft = 5;
+        leftPane.style.marginRight = 5;
+        leftPane.style.marginBottom = 10;
+        
         // Right pane for item details
-        m_RightPane = new ScrollView();
+        m_RightPane = new VisualElement();
+        
         splitView.Add(m_RightPane);
         
-        // Build the detail UI
-        BuildDetailPane();
-
         // Add Save and Load buttons
         var buttonContainer = new VisualElement
         {
             style =
             {
                 flexDirection = FlexDirection.Row,
-                marginTop = 10
+                marginTop = 10,
+                alignItems = Align.FlexStart
             }
         };
 
@@ -140,189 +156,168 @@ public class RPGItemCreator : EditorWindow
         buttonContainer.Add(loadButton);
         buttonContainer.Add(addButton);
         buttonContainer.Add(removeButton);
+        
+        buttonContainer.style.marginTop = 10;
+        buttonContainer.style.marginLeft = 10;
+        buttonContainer.style.marginRight = 10;
+        buttonContainer.style.marginBottom = 10;
+        
         m_RightPane.Add(buttonContainer);
+        
+        // Build the detail UI
+        BuildDetailPane();
     }
     
-    private void FilterList(string searchTerm)
+   private void BuildDetailPane()
     {
-        if (string.IsNullOrEmpty(searchTerm))
-        {
-            leftPane.itemsSource = itemContainer.items;
-        }
-        else
-        {
-            leftPane.itemsSource = itemContainer.items.Where(item => item.generalSettings.itemName.ToLower().Contains(searchTerm.ToLower())).ToList();
-        }
-        leftPane.Rebuild();
-    }
-    
-    private VisualElement MakeItem()
-    {
-        var itemElement = new VisualElement();
-        var label = new Label();
-        itemElement.Add(label);
-        return itemElement;
-    }
-    
-    private void BindItem(VisualElement element, int index)
-    {
-        var item = itemContainer.items[index];
-        var label = element.Q<Label>();
-        label.text = item.generalSettings.itemName;
-    }
-    
-    private void OnItemSelected(IEnumerable<object> selectedItems)
-    {
-        var itemList = selectedItems.ToList();
-        if (itemList.Count > 0)
-        {
-            // Find the index of the selected item
-            selectedIndex = itemContainer.items.IndexOf((Item)itemList[0]);
-            DisplayItemDetails(itemContainer.items[selectedIndex]);
-        }
-        else
-        {
-            selectedIndex = -1;
-            ClearDetailPane();
-        }
-    }
-    
-    private void BuildDetailPane()
-    {
+        // Create a two-pane view with the left pane being fixed.
+        var detailsSplitView = new TwoPaneSplitView(0, 700, TwoPaneSplitViewOrientation.Horizontal);
+        m_RightPane.Add(detailsSplitView);
+        
+        // Add two child elements to the TwoPaneSplitView
+        VisualElement leftDetailsPane = new ScrollView();
+        VisualElement rightDetailsPane = new ScrollView();
+        detailsSplitView.Add(leftDetailsPane);
+        detailsSplitView.Add(rightDetailsPane);
+        
+        leftDetailsPane.style.marginTop = 10;
+        leftDetailsPane.style.marginLeft = 10;
+        leftDetailsPane.style.marginRight = 10;
+        leftDetailsPane.style.marginBottom = 10;
+        
+        rightDetailsPane.style.marginTop = 10;
+        rightDetailsPane.style.marginLeft = 10;
+        rightDetailsPane.style.marginRight = 10;
+        rightDetailsPane.style.marginBottom = 10;
+        
         // General Settings
-        var generalSettingsFoldout = new Foldout{ text = "General Settings"};
-        generalSettingsFoldout.style.fontSize = 16;
-        generalSettingsFoldout.style.unityFontStyleAndWeight = FontStyle.Bold;
-        m_RightPane.Add(generalSettingsFoldout);
+        var generalSettingsFoldout = new Foldout { text = "General Settings" };
+        ApplyHeaderStyle(generalSettingsFoldout);
+        leftDetailsPane.Add(generalSettingsFoldout);
 
-        itemNameField = new TextField("Item Name");
-        generalSettingsFoldout.Add(itemNameField);
+        itemNameField = new TextField();
+        AddLabeledField(generalSettingsFoldout, "Item Name", itemNameField);
+        
+        itemIDField = new IntegerField();
+        AddLabeledField(generalSettingsFoldout, "Item ID", itemIDField);
 
-        itemIDField = new IntegerField("Item ID");
-        generalSettingsFoldout.Add(itemIDField);
-
-        prefabField = new ObjectField("Prefab")
+        prefabField = new ObjectField()
         {
             objectType = typeof(GameObject),
             allowSceneObjects = false
         };
-        generalSettingsFoldout.Add(prefabField);
+        AddLabeledField(generalSettingsFoldout, "Prefab", prefabField);
 
         // Weapon Stats
-        var weaponStatsFoldout = new Foldout{ text = "Weapon Stats"};
-        weaponStatsFoldout.style.fontSize = 16;
-        weaponStatsFoldout.style.unityFontStyleAndWeight = FontStyle.Bold;
-        m_RightPane.Add(weaponStatsFoldout);
+        var weaponStatsFoldout = new Foldout { text = "Weapon Stats" };
+        ApplyHeaderStyle(weaponStatsFoldout);
+        leftDetailsPane.Add(weaponStatsFoldout);
 
-        stackSizeField = new IntegerField("Stack Size");
-        weaponStatsFoldout.Add(stackSizeField);
+        stackSizeField = new IntegerField();
+        AddLabeledField(weaponStatsFoldout, "Stack Size", stackSizeField);
         
-        rarityField = new IntegerField("Rarity");
-        weaponStatsFoldout.Add(rarityField);
+        rarityField = new IntegerField();
+        AddLabeledField(weaponStatsFoldout, "Rarity", rarityField);
         
-        attackPowerField = new IntegerField("Attack Power");
-        m_RightPane.Add(attackPowerField);
+        attackPowerField = new IntegerField();
+        AddLabeledField(weaponStatsFoldout, "Attack Power", attackPowerField);
 
-        attackSpeedField = new FloatField("Attack Speed");
-        weaponStatsFoldout.Add(attackSpeedField);
+        attackSpeedField = new FloatField();
+        AddLabeledField(weaponStatsFoldout, "Attack Speed", attackSpeedField);
 
-        rangeField = new FloatField("Range");
-        weaponStatsFoldout.Add(rangeField);
+        rangeField = new FloatField();
+        AddLabeledField(weaponStatsFoldout, "Range", rangeField);
 
-        durabilityField = new FloatField("Durability");
-        weaponStatsFoldout.Add(durabilityField);
+        durabilityField = new FloatField();
+        AddLabeledField(weaponStatsFoldout, "Durability", durabilityField);
 
         // Modifiers
-        var modifiersFoldout = new Foldout{ text = "Modifiers"};
-        modifiersFoldout.style.fontSize = 16;
-        modifiersFoldout.style.unityFontStyleAndWeight = FontStyle.Bold;
-        m_RightPane.Add(modifiersFoldout);
+        var modifiersFoldout = new Foldout { text = "Modifiers" };
+        ApplyHeaderStyle(modifiersFoldout);
+        leftDetailsPane.Add(modifiersFoldout);
         
-        strengthField = new IntegerField("Strength");
-        modifiersFoldout.Add(strengthField);
+        strengthField = new IntegerField();
+        AddLabeledField(modifiersFoldout, "Strength", strengthField);
         
-        intelligenceField= new IntegerField("Intelligence");
-        modifiersFoldout.Add(intelligenceField);
+        intelligenceField = new IntegerField();
+        AddLabeledField(modifiersFoldout, "Intelligence", intelligenceField);
         
-        agilityField= new IntegerField("Agility");
-        modifiersFoldout.Add(agilityField);
+        agilityField = new IntegerField();
+        AddLabeledField(modifiersFoldout, "Agility", agilityField);
         
-        luckField= new IntegerField("Luck");
-        modifiersFoldout.Add(luckField);
+        luckField = new IntegerField();
+        AddLabeledField(modifiersFoldout, "Luck", luckField);
         
-        maxHealthField= new IntegerField("Max Health");
-        modifiersFoldout.Add(maxHealthField);
+        maxHealthField = new IntegerField();
+        AddLabeledField(modifiersFoldout, "Max Health", maxHealthField);
         
-        maxManaField= new IntegerField("Max Mana");
-        modifiersFoldout.Add(maxManaField);
+        maxManaField = new IntegerField();
+        AddLabeledField(modifiersFoldout, "Max Mana", maxManaField);
         
-        moveSpeedField = new FloatField("Move Speed");
-        modifiersFoldout.Add(moveSpeedField);
+        moveSpeedField = new FloatField();
+        AddLabeledField(modifiersFoldout, "Move Speed", moveSpeedField);
         
-        attackDamageField= new FloatField("Attack Damage");
-        modifiersFoldout.Add(attackDamageField);
+        attackDamageField = new FloatField();
+        AddLabeledField(modifiersFoldout, "Attack Damage", attackDamageField);
         
-        critChanceField= new FloatField("Crit Chance");
-        modifiersFoldout.Add(critChanceField);
+        critChanceField = new FloatField();
+        AddLabeledField(modifiersFoldout, "Crit Chance", critChanceField);
         
-        critMultiplierField= new FloatField("Crit Multiplier");
-        modifiersFoldout.Add(critMultiplierField);
+        critMultiplierField = new FloatField();
+        AddLabeledField(modifiersFoldout, "Crit Multiplier", critMultiplierField);
         
-        damageReductionField= new FloatField("Damage Reduction");
-        modifiersFoldout.Add(damageReductionField);
+        damageReductionField = new FloatField();
+        AddLabeledField(modifiersFoldout, "Damage Reduction", damageReductionField);
         
-        experienceMultiplierField= new FloatField("Experience Multiplier");
-        modifiersFoldout.Add(experienceMultiplierField);
-
-        // Description
-        var descriptionLabel = new Label("Description");
-        descriptionLabel.style.fontSize = 16;
-        descriptionLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-        m_RightPane.Add(descriptionLabel);
-
-        shortDescriptionField = new TextField("Short Description");
-        m_RightPane.Add(shortDescriptionField);
-
-        detailedDescriptionField = new TextField("Detailed Description");
-        detailedDescriptionField.style.height = 60;
-        m_RightPane.Add(detailedDescriptionField);
-
-        // Notes
-        var notesLabel = new Label("Notes");
-        notesLabel.style.fontSize = 16;
-        notesLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-        m_RightPane.Add(notesLabel);
-
-        developerNotesField = new TextField("Developer Notes");
-        developerNotesField.style.height = 40;
-        m_RightPane.Add(developerNotesField);
-
+        experienceMultiplierField = new FloatField();
+        AddLabeledField(modifiersFoldout, "Experience Multiplier", experienceMultiplierField);
+        
         // Item Requirements
-        var requirementsFoldout = new Foldout{ text = "Item Requirements"};
-        requirementsFoldout.style.fontSize = 16;
-        requirementsFoldout.style.unityFontStyleAndWeight = FontStyle.Bold;
-        m_RightPane.Add(requirementsFoldout);
+        var requirementsFoldout = new Foldout { text = "Item Requirements" };
+        ApplyHeaderStyle(requirementsFoldout);
+        rightDetailsPane.Add(requirementsFoldout);
 
-        requiredLevelField = new IntegerField("Required Level");
-        requirementsFoldout.Add(requiredLevelField);
+        requiredLevelField = new IntegerField();
+        AddLabeledField(requirementsFoldout, "Required Level", requiredLevelField);
 
-        requiredClassField = new TextField("Required Class");
-        requirementsFoldout.Add(requiredClassField);
+        requiredClassField = new TextField();
+        AddLabeledField(requirementsFoldout, "Required Class", requiredClassField);
 
-        requiresTwoHandsToggle = new Toggle("Requires Two Hands");
-        requirementsFoldout.Add(requiresTwoHandsToggle);
+        requiresTwoHandsToggle = new Toggle();
+        AddLabeledField(requirementsFoldout, "Requires Two Hands", requiresTwoHandsToggle);
         
-        strengthRequirementField = new IntegerField("Required Strength");
-        requirementsFoldout.Add(strengthRequirementField);
+        strengthRequirementField = new IntegerField();
+        AddLabeledField(requirementsFoldout, "Required Strength", strengthRequirementField);
         
-        intelligenceRequirementField = new IntegerField("Required Intelligence");
-        requirementsFoldout.Add(intelligenceRequirementField);
+        intelligenceRequirementField = new IntegerField();
+        AddLabeledField(requirementsFoldout, "Required Intelligence", intelligenceRequirementField);
         
-        agilityRequirementField = new IntegerField("Required Agility");
-        requirementsFoldout.Add(agilityRequirementField);
+        agilityRequirementField = new IntegerField();
+        AddLabeledField(requirementsFoldout, "Required Agility", agilityRequirementField);
         
-        luckRequirementField= new IntegerField("Required Luck");
-        requirementsFoldout.Add(luckRequirementField);
+        luckRequirementField = new IntegerField();
+        AddLabeledField(requirementsFoldout, "Required Luck", luckRequirementField);
+        
+        // Description
+        var descriptionFoldout = new Foldout{ text = "Description"};
+        ApplyHeaderStyle(descriptionFoldout);
+        rightDetailsPane.Add(descriptionFoldout);
+
+        shortDescriptionField = new TextField();
+        AddLabeledField(descriptionFoldout, "Short Description", shortDescriptionField);
+        
+        detailedDescriptionField = new TextField();
+        AddLabeledField(descriptionFoldout, "Detailed Description", detailedDescriptionField);
+        detailedDescriptionField.multiline = true;
+        
+        // Notes
+        var notesFoldout = new Foldout{ text = "Notes"};
+        ApplyHeaderStyle(notesFoldout);
+        rightDetailsPane.Add(notesFoldout);
+
+        developerNotesField = new TextField();
+        AddLabeledField(notesFoldout, "Developer Notes", developerNotesField);
+        developerNotesField.multiline = true;
 
         // Add change listeners to update the item data when fields are edited
         itemNameField.RegisterValueChangedCallback(evt => UpdateItemName(evt.newValue));
@@ -363,6 +358,115 @@ public class RPGItemCreator : EditorWindow
         luckRequirementField.RegisterValueChangedCallback(evt => UpdateLuckRequirement(evt.newValue));
     }
 
+    private void AddLabeledField(VisualElement container, string labelText, VisualElement field)
+    {
+        // Create a row container
+        var row = new VisualElement();
+        row.style.flexDirection = FlexDirection.Row;
+        row.style.justifyContent = Justify.FlexStart; // Aligns items to the start
+        row.style.alignItems = Align.Center; // Center vertically if needed
+
+        // Create the label
+       
+        var label = new Label(labelText)
+        {
+            style = { width = 150 } // Fixed width for the label
+        };
+        ApplyDefaultTextStyle(label);
+        
+        // Add the label to the row
+        row.Add(label);
+        
+        // Create a spacer to push the input field to the end
+        var spacer = new VisualElement();
+        spacer.style.flexGrow = 1; // Allow spacer to take available space
+        row.Add(spacer);
+        
+        ApplyDefaultTextStyle(field);
+        field.style.width = Length.Percent(60);
+        // Add the field to the row
+        row.Add(field);
+        
+        // Add the row to the main container
+        container.Add(row);
+    }
+
+    private void FilterList(string searchTerm)
+    {
+        if (string.IsNullOrEmpty(searchTerm))
+        {
+            leftPane.itemsSource = itemContainer.items;
+        }
+        else
+        {
+            leftPane.itemsSource = itemContainer.items.Where(item => item.generalSettings.itemName.ToLower().Contains(searchTerm.ToLower())).ToList();
+        }
+        leftPane.Rebuild();
+    }
+    
+    private VisualElement MakeItem()
+    {
+        var itemElement = new VisualElement();
+        itemElement.style.flexDirection = FlexDirection.Row;
+        itemElement.style.alignItems = Align.FlexStart;
+        itemElement.style.alignItems = Align.Center; 
+        
+        // Create and configure the image
+        var image = new Image();
+        image.style.flexGrow = 0; 
+        //image.style.width = Length.Percent(100); 
+        //image.style.height = Length.Auto(); 
+        itemElement.Add(image);
+        
+        var label = new Label();
+        label.style.flexGrow = 1;
+        ApplyHeaderStyle(label);
+        itemElement.Add(label);
+
+        return itemElement;
+    }
+    
+    private void BindItem(VisualElement element, int index)
+    {
+        var item = itemContainer.items[index];
+        var image = element.Q<Image>();
+        var label = element.Q<Label>();
+        // Set item name
+        label.text = item.generalSettings.itemName; 
+        // Check if prefab exists
+        if (item.generalSettings.prefab != null)
+        {
+            // Get Texture2D preview of the prefab
+            Texture2D prefabTexture = AssetPreview.GetAssetPreview(item.generalSettings.prefab);
+
+            if (prefabTexture != null)
+            {
+                // Create a sprite from the Texture2D
+                Rect spriteRect = new Rect(0, 0, prefabTexture.width, prefabTexture.height);
+                Sprite prefabSprite = Sprite.Create(prefabTexture, spriteRect, new Vector2(0.5f, 0.5f));
+
+                // Assign the sprite to the Image element
+                image.sprite = prefabSprite;
+            }
+        }
+    }
+    
+    private void OnItemSelected(IEnumerable<object> selectedItems)
+    {
+        var itemList = selectedItems.ToList();
+        if (itemList.Count > 0)
+        {
+            // Find the index of the selected item
+            selectedIndex = itemContainer.items.IndexOf((Item)itemList[0]);
+            DisplayItemDetails(itemContainer.items[selectedIndex]);
+        }
+        else
+        {
+            selectedIndex = -1;
+            ClearDetailPane();
+        }
+    }
+    
     private void DisplayItemDetails(Item item)
     {
         // Populate the fields with the item's data
@@ -797,169 +901,22 @@ public class RPGItemCreator : EditorWindow
             itemContainer.items[selectedIndex] = item;
         }
     }
-    #endregion 
+    #endregion
 
+    public void ApplyHeaderStyle(VisualElement element)
+    {
+        element.style.fontSize = 16;
+        element.style.unityFontStyleAndWeight = FontStyle.Bold;
+        element.style.marginBottom = 10;  
+        element.style.marginTop = 5;
+    }
+    
+    public void ApplyDefaultTextStyle(VisualElement element)
+    {
+        element.style.fontSize = 14;
+        element.style.unityFontStyleAndWeight = FontStyle.Normal;
+        element.style.marginBottom = 5; 
+    }
 }
 
-  // public void CreateGUI()
-  //   {
-  //       // Get a list of all items in the items folder
-  //       var allObjectSOs = AssetDatabase.FindAssets("t:ScriptableObject", new string[]{"Assets/Scripts/Items"});
-  //       var allObjects = new List<ItemScriptableObject>();
-  //       foreach (var SO in allObjectSOs)
-  //       {
-  //           allObjects.Add(AssetDatabase.LoadAssetAtPath<ItemScriptableObject>(AssetDatabase.GUIDToAssetPath(SO)));
-  //       }
-  //       
-  //       // Create a two-pane view with the left pane being fixed.
-  //       var splitView = new TwoPaneSplitView(0, 250, TwoPaneSplitViewOrientation.Horizontal);
-  //       // Add the view to the visual tree by adding it as a child to the root element.
-  //       rootVisualElement.Add(splitView);
-  //       
-  //       // A TwoPaneSplitView needs exactly two child elements.
-  //       var leftPane = new ListView();
-  //       splitView.Add(leftPane);
-  //       m_RightPane = new VisualElement();
-  //       splitView.Add(m_RightPane);
-  //       // Adding another split view for item info
-  //       var rightPaneSplitView =  new TwoPaneSplitView(0, 250, TwoPaneSplitViewOrientation.Horizontal);
-  //       m_RightPane.Add(rightPaneSplitView);
-  //       
-  //       // A TwoPaneSplitView needs exactly two child elements.
-  //       var leftInfoPane = new ListView();
-  //       rightPaneSplitView.Add(leftInfoPane);
-  //       var rightInfoPane = new ListView();
-  //       rightPaneSplitView.Add(rightInfoPane);
-  //       
-  //       // Create a custom Visual Element for each item in the list
-  //       leftPane.makeItem = () =>
-  //       {
-  //           var itemElement = new VisualElement();
-  //           var image = new Image();
-  //           image.style.width = 20;  // Adjust image size
-  //           image.style.height = 20;
-  //           var label = new Label();
-  //
-  //           itemElement.Add(image);
-  //           itemElement.Add(label);
-  //           itemElement.style.flexDirection = FlexDirection.Row;
-  //           return itemElement;
-  //       };
-  //       
-  //       // Bind the data to each item
-  //       leftPane.bindItem = (element, index) =>
-  //       {
-  //           var item = allObjects[index];
-  //           var image = element.Q<Image>();   // Get the Image component
-  //           var label = element.Q<Label>();   // Get the Label component
-  //
-  //           // if (item.pre!= null)
-  //           // {
-  //           //     Texture2D prefabVisualTexture = AssetPreview.GetAssetPreview(prefabObjectField.value);
-  //           //     prefabVisual.sprite = Sprite.Create(prefabVisualTexture, new Rect(0,0, prefabVisualTexture.width, prefabVisualTexture.height), new Vector2(0.5f, 0.5f));
-  //           // }
-  //           //
-  //           // image.sprite = sprite;
-  //           // label.text = sprite.name;
-  //       };
-  //
-  //       // leftPane.makeItem = () => new Label();
-  //       // leftPane.bindItem = (item, index) => { (item as Label).text = allObjects[index].name; };
-  //       leftPane.itemsSource = allObjects;
-  //
-  //       // Get a list of all Scriptable Objects in the Item Info folder
-  //       var allItemInfoSO = AssetDatabase.FindAssets("t:ScriptableObject", new string[]{"Assets/Scripts/Items/Weapons"});
-  //       var allItemInfo = new List<GeneralSettingsScriptableObject>();
-  //       foreach (var sO in allItemInfoSO)
-  //       {
-  //           allItemInfo.Add(AssetDatabase.LoadAssetAtPath<GeneralSettingsScriptableObject>(AssetDatabase.GUIDToAssetPath(sO)));
-  //       }
-  //       
-  //       // Left info pane content
-  //       leftInfoPane.makeItem = () =>
-  //       {
-  //           var itemElement = new VisualElement();
-  //           Label label = new Label();
-  //           var container = new VisualElement();
-  //           itemElement.Add(label);
-  //           itemElement.Add(container);
-  //           
-  //           var prefabVisual = new Image();
-  //           var container2 = new VisualElement();
-  //           container.Add(prefabVisual);
-  //           container.Add(container2);
-  //           container.style.flexDirection = FlexDirection.Row;
-  //           
-  //           // container2 content
-  //           var nameInput = new TextField();
-  //           var typeDropdown = new DropdownField();
-  //           var prefabInput = new ObjectField();
-  //           container2.Add(nameInput);
-  //           container2.Add(typeDropdown);
-  //           container2.Add(prefabInput);
-  //
-  //           return itemElement;
-  //       };
-  //       
-  //       // Bind the data to each item
-  //       leftInfoPane.bindItem = (element, index) =>
-  //       {
-  //           var prefabVisual = element.Q<Image>(); 
-  //           var label = element.Q<Label>(); 
-  //           var nameInput = element.Q<TextField>();
-  //           var typeDropdown = element.Q<DropdownField>();
-  //           var prefabObjectField = element.Q<ObjectField>();
-  //
-  //           if (prefabObjectField.value != null)
-  //           {
-  //               Texture2D prefabVisualTexture = AssetPreview.GetAssetPreview(prefabObjectField.value);
-  //               prefabVisual.sprite = Sprite.Create(prefabVisualTexture, new Rect(0,0, prefabVisualTexture.width, prefabVisualTexture.height), new Vector2(0.5f, 0.5f));
-  //           }
-  //           
-  //           label.text = "General Settings";
-  //       };
-  //
-  //       leftInfoPane.itemsSource = allItemInfoSO;
-  //       
-  //       // right info pane content
-  //       rightInfoPane.makeItem = () =>
-  //       {
-  //           var itemElement = new VisualElement();
-  //           var descriptionElement = new VisualElement();
-  //
-  //           return itemElement;
-  //       };
-  //       
-  //       
-  //       // React to the user's selection
-  //       leftPane.selectionChanged += OnSpriteSelectionChange;
-  //       
-  //       // Restore the selection index from before the hot reload.
-  //       leftPane.selectedIndex = m_SelectedIndex;
-  //
-  //       // Store the selection index when the selection changes.
-  //       leftPane.selectionChanged += (items) => { m_SelectedIndex = leftPane.selectedIndex; };
-  //   }
-  // private void OnItemSelectionChanged(IEnumerable<object> selectedItems)
-  // {
-  //     // Clear all previous content from the pane.
-  //     m_RightPane.Clear();
-  //
-  //     // Get the selected item and display it.
-  //     var enumerator = selectedItems.GetEnumerator();
-  //     if (enumerator.MoveNext())
-  //     {
-  //         var selectedSprite = enumerator.Current as Sprite;
-  //         if (selectedSprite != null)
-  //         {
-  //             // Add a new Image control and display the sprite.
-  //             var spriteImage = new Image();
-  //             spriteImage.scaleMode = ScaleMode.ScaleToFit;
-  //             spriteImage.sprite = selectedSprite;
-  //
-  //             // Add the Image control to the right-hand pane.
-  //             m_RightPane.Add(spriteImage);
-  //         }
-  //     }
-  // }
 
