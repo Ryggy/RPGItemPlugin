@@ -2,16 +2,15 @@
     "generalSettings": {
         "itemName": "Sword",
         "itemID": 1,
-        "previousFilePath": "",
         "prefab": {
-            "instanceID": 23476
+            "instanceID": 23110
         },
         "itemType": 0
     },
     "weaponStats": {
-        "stackSize": 0,
+        "stackSize": 1,
         "rarity": 0,
-        "attackPower": 0,
+        "attackPower": 1,
         "attackSpeed": 0.0,
         "range": 0.0,
         "durability": 0.0

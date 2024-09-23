@@ -25,7 +25,6 @@ public struct GeneralSettings
 {
     public string itemName;
     public int itemID;
-    public string previousFilePath;
     public GameObject prefab;
     public ItemType itemType;
 }

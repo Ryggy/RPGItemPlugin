@@ -2,14 +2,13 @@
     "generalSettings": {
         "itemName": "Bow",
         "itemID": 2,
-        "previousFilePath": "E:/SchoolWork/RPGItemPlugin/RPG Item Plugin/Assets\\Items/Weapon\\ Bow_2.json",
         "prefab": {
-            "instanceID": 23900
+            "instanceID": 23108
         },
         "itemType": 0
     },
     "weaponStats": {
-        "stackSize": 0,
+        "stackSize": 1,
         "rarity": 0,
         "attackPower": 0,
         "attackSpeed": 0.0,

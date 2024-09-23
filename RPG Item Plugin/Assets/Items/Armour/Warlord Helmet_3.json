@@ -2,14 +2,13 @@
     "generalSettings": {
         "itemName": "Warlord Helmet",
         "itemID": 3,
-        "previousFilePath": "",
         "prefab": {
-            "instanceID": 23970
+            "instanceID": 23112
         },
         "itemType": 1
     },
     "weaponStats": {
-        "stackSize": 0,
+        "stackSize": 1,
         "rarity": 0,
         "attackPower": 0,
         "attackSpeed": 0.0,

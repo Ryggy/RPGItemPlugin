@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -33,20 +34,6 @@ public static class ItemSerialization
         {
             string json = JsonUtility.ToJson(item, true);
             string path = GetItemPath(item);
-            string previousPath = String.Empty;
-            
-            // If there is a previous path (meaning the name or id has changed), get the old path
-            if (!string.IsNullOrEmpty(item.generalSettings.previousFilePath))
-            {
-                previousPath = item.generalSettings.previousFilePath;
-            }
-            
-            // If the previous file exists and its name has changed, rename it
-            if (!string.IsNullOrEmpty(previousPath) && File.Exists(previousPath) && previousPath != path)
-            {
-                File.Move(previousPath, path);
-                Debug.Log($"Renamed file from {previousPath} to {path}");
-            }
             
             // Save the item as JSON
             File.WriteAllText(path, json);
@@ -73,12 +60,35 @@ public static class ItemSerialization
                 {
                     string json = File.ReadAllText(file);
                     Item item = JsonUtility.FromJson<Item>(json);
-                    container.items.Add(item); // Assuming you have a List<Item> in ItemContainer
+                    container.items.Add(item);
                 }
             }
         }
         
         Debug.Log("Items loaded successfully.");
         return container;
+    }
+    
+    public static ItemContainer LoadItems(List<TextAsset> files)
+    {
+        ItemContainer container = new ItemContainer();
+        foreach (var file in files)
+        {
+            string json = file.text;
+            Item item = JsonUtility.FromJson<Item>(json);
+            container.items.Add(item); 
+        }
+        
+        Debug.Log("Items loaded successfully.");
+        return container;
+    }
+    
+    public static Item LoadItem(TextAsset file)
+    {
+        string json = file.text;
+        Item item = JsonUtility.FromJson<Item>(json);
+        
+        Debug.Log("Item loaded successfully.");
+        return item;
     }
 }
