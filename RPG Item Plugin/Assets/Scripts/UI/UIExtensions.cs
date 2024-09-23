@@ -42,8 +42,17 @@ public static class UIExtensions
         // Create the label
         var label = new Label(labelText);
         if(fixedLabelWidth) { label.style.width = 150;}
-        
         row.Add(label);
+        
+        // Add event listener for detecting mouse down and handling double-clicks
+        label.RegisterCallback<MouseDownEvent>(evt =>
+        {
+            if (evt.clickCount == 2) // MouseDownEvent provides clickCount
+            {
+                OnDoubleClick(label);  // Call OnDoubleClick if double-click detected
+            }
+        });
+
         
         // Create a spacer to push the input field to the end
         var spacer = new VisualElement();
@@ -55,6 +64,27 @@ public static class UIExtensions
         
         row.Add(field);
         container.Add(row);
+    }
+
+    private static void OnDoubleClick(Label ctx)
+    {
+        var textField = new TextField();
+        textField.value = ctx.text;
+        Display(ctx, false);
+        ctx.parent.hierarchy.Insert(0, textField);
+        textField.style.maxWidth = 150;
+
+        textField.RegisterCallback<FocusOutEvent>(evt =>
+        {
+            OnDeselected(ctx, textField);
+        });
+    }
+
+    private static void OnDeselected(Label ctx, TextField ctxName)
+    {
+        ctx.text = ctxName.text;
+        ctxName.parent.Remove(ctxName);
+        Display(ctx, true);
     }
     
     public static void ApplyHeaderStyle(VisualElement element)

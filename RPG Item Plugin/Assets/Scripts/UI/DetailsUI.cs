@@ -41,6 +41,8 @@ public class DetailsUI
         itemRequirementsUI = new ItemRequirementsUI(rightDetailsPane);
         descriptionUI = new DescriptionUI(rightDetailsPane);
         notesUI = new NotesUI(rightDetailsPane);
+
+        var detailsSegment = new DetailsSegment(rightDetailsPane);
     }
     
     public static void DisplayItemDetails(Item item)
