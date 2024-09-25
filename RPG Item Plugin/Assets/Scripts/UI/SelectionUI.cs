@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,8 +30,8 @@ public class SelectionUI
         // add some spacing between search bar and list
         searchField.RegisterValueChangedCallback(evt => FilterList(evt.newValue));
         
-        // Left pane for the list of items
-        listViewPane = new ListView(itemContainer.items, 75, MakeListObject, BindListObject);
+        // add list of items
+        listViewPane = new ListView(_itemContainer.items, 75, MakeListObject, BindListObject);
         listViewPane.selectionType = SelectionType.Single;
         listViewPane.selectionChanged += OnListObjectSelected;
         container.Add(listViewPane);  // Add the ListView below the search bar in the container
@@ -49,10 +50,12 @@ public class SelectionUI
         }
         else
         {
-            // find items where the item name or item id contains the search term
+            // find items where the item name or item id contains the search term, ignoring case of text
+            // StringComparison.Ordinal = Compare strings using ordinal (binary) sort rules and ignoring the case of the strings being compared.
+            
             listViewPane.itemsSource = _itemContainer.items
-                .Where(item => item.generalSettings.itemName.ToLower().Contains(searchTerm.ToLower()) 
-                               || item.generalSettings.itemID.ToString().Contains(searchTerm))
+                .Where(item => item.generalSettings.itemName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) 
+                               || item.generalSettings.itemID.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
         listViewPane.Rebuild();

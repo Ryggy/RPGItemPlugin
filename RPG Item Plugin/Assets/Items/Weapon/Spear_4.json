@@ -1,19 +1,19 @@
 {
     "generalSettings": {
-        "itemName": "Sword",
-        "itemID": 1,
+        "itemName": "Spear",
+        "itemID": 4,
         "prefab": {
-            "instanceID": 23128
+            "instanceID": 0
         },
         "itemType": 0
     },
     "weaponStats": {
         "stackSize": 1,
         "rarity": 0,
-        "attackPower": 1,
-        "attackSpeed": 0.0,
-        "range": 0.0,
-        "durability": 0.0
+        "attackPower": 100,
+        "attackSpeed": 1.0,
+        "range": 1.0,
+        "durability": 100.0
     },
     "modifiers": {
         "strength": 0,
