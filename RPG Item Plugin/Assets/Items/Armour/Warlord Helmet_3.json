@@ -2,9 +2,7 @@
     "generalSettings": {
         "itemName": "Warlord Helmet",
         "itemID": 3,
-        "prefab": {
-            "instanceID": 23130
-        },
+        "prefabPath": "Assets/Prefabs/warlord-helmet.prefab",
         "itemType": 1
     },
     "weaponStats": {

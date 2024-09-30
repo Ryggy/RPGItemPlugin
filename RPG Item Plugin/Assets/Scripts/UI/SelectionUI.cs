@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -12,7 +12,6 @@ public class SelectionUI
     public static int selectedIndex = -1;
     private TextField searchField;
     public static ListView listViewPane;
-    
     public SelectionUI(VisualElement container, ItemContainer itemContainer)
     {
         _itemContainer = itemContainer;
@@ -27,11 +26,10 @@ public class SelectionUI
         searchField.style.marginBottom = 10;
         container.Add(searchField);
         
-        // add some spacing between search bar and list
         searchField.RegisterValueChangedCallback(evt => FilterList(evt.newValue));
         
         // add list of items
-        listViewPane = new ListView(_itemContainer.items, 75, MakeListObject, BindListObject);
+        listViewPane = new ListView(_itemContainer.items, 75, MakeItem, BindItem);
         listViewPane.selectionType = SelectionType.Single;
         listViewPane.selectionChanged += OnListObjectSelected;
         container.Add(listViewPane);  // Add the ListView below the search bar in the container
@@ -44,24 +42,30 @@ public class SelectionUI
     
     private void FilterList(string searchTerm)
     {
+        List<Item> filteredList;
+        
         if (string.IsNullOrEmpty(searchTerm))
         {
-            listViewPane.itemsSource = _itemContainer.items;
+            // If search term is empty, show the full item list
+            filteredList = _itemContainer.items;
         }
         else
         {
-            // find items where the item name or item id contains the search term, ignoring case of text
-            // StringComparison.Ordinal = Compare strings using ordinal (binary) sort rules and ignoring the case of the strings being compared.
-            
-            listViewPane.itemsSource = _itemContainer.items
-                .Where(item => item.generalSettings.itemName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) 
+            // Filter items by name or ID
+            filteredList = _itemContainer.items
+                .Where(item => item.generalSettings.itemName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
                                || item.generalSettings.itemID.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
+    
+        // Update the itemsSource of the ListView to the filtered list
+        listViewPane.itemsSource = filteredList;
+        
+        // Rebuild the ListView to reflect the changes
         listViewPane.Rebuild();
     }
     
-    private VisualElement MakeListObject()
+    private VisualElement MakeItem()
     {
         var itemElement = new VisualElement();
         itemElement.style.flexDirection = FlexDirection.Row;
@@ -82,18 +86,22 @@ public class SelectionUI
         return itemElement;
     }
     
-    private void BindListObject(VisualElement element, int index)
+    private void BindItem(VisualElement element, int index)
     {
-        var item = _itemContainer.items[index];
+        // Access the filtered list via the ListView's itemsSource
+        var item = (Item)listViewPane.itemsSource[index];
         var image = element.Q<Image>();
         var label = element.Q<Label>();
+        
         // Set item name
         label.text = item.generalSettings.itemName; 
+        
         // Check if prefab exists
-        if (item.generalSettings.prefab != null)
+        if (item.generalSettings.prefabPath != null)
         {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(item.generalSettings.prefabPath);
             // Get Texture2D preview of the prefab
-            Texture2D prefabTexture = AssetPreview.GetAssetPreview(item.generalSettings.prefab);
+            Texture2D prefabTexture = AssetPreview.GetAssetPreview(prefab);
 
             if (prefabTexture != null)
             {
@@ -132,7 +140,8 @@ public class SelectionUI
             {
                 flexDirection = FlexDirection.Row,
                 marginTop = 10,
-                alignItems = Align.FlexStart
+                alignItems = Align.FlexStart,
+                flexShrink = 0
             }
         };
 
@@ -181,7 +190,7 @@ public class SelectionUI
             {
                 itemName = "New Item",
                 itemID = _itemContainer.items.Count > 0 ? _itemContainer.items.Max(i => i.generalSettings.itemID) + 1 : 1,
-                prefab = null
+                prefabPath = null
             },
             weaponStats = new WeaponStats(),
             modifiers = new Modifiers(),
@@ -199,9 +208,41 @@ public class SelectionUI
     {
         if (selectedIndex >= 0 && selectedIndex < _itemContainer.items.Count)
         {
+            // _itemContainer.items.RemoveAt(selectedIndex);
+            // listViewPane.Rebuild();
+            // selectedIndex = -1;
+            // DetailsUI.ClearDetailPane();
+            
+            // Get the selected item
+            Item selectedItem = _itemContainer.items[selectedIndex];
+        
+            // Get the path to the item's JSON file
+            string itemPath = ItemSerialization.GetItemPath(selectedItem);
+            string metaFilePath = itemPath + ".meta";  // The corresponding meta file
+        
+            // Remove the item from the list
             _itemContainer.items.RemoveAt(selectedIndex);
+        
+            // Delete the JSON file and its meta file
+            if (File.Exists(itemPath))
+            {
+                File.Delete(itemPath);
+                Debug.Log($"Deleted {itemPath}");
+            }
+            if (File.Exists(metaFilePath))
+            {
+                File.Delete(metaFilePath);
+                Debug.Log($"Deleted {metaFilePath}");
+            }
+        
+            // Refresh the AssetDatabase to apply the changes in Unity
+            AssetDatabase.Refresh();
+        
+            // Rebuild the ListView
             listViewPane.Rebuild();
             selectedIndex = -1;
+        
+            // Clear the details pane
             DetailsUI.ClearDetailPane();
         }
     }

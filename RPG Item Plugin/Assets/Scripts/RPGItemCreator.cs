@@ -95,12 +95,12 @@ public class RPGItemCreator : EditorWindow
         }
     }
 
-    public static void UpdatePrefab(GameObject newPrefab)
+    public static void UpdatePrefabPath(string prefabPath)
     {
         if (SelectionUI.selectedIndex >= 0 && SelectionUI.selectedIndex < SelectionUI._itemContainer.items.Count)
         {
             var item = SelectionUI._itemContainer.items[SelectionUI.selectedIndex];
-            item.generalSettings.prefab = newPrefab;
+            item.generalSettings.prefabPath = prefabPath;
             SelectionUI._itemContainer.items[SelectionUI.selectedIndex] = item;
         }
     }

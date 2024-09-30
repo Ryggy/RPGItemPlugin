@@ -2,9 +2,7 @@
     "generalSettings": {
         "itemName": "Bow",
         "itemID": 2,
-        "prefab": {
-            "instanceID": 23126
-        },
+        "prefabPath": "Assets/Prefabs/Bow icon.prefab",
         "itemType": 0
     },
     "weaponStats": {

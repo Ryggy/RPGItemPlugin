@@ -2,9 +2,7 @@
     "generalSettings": {
         "itemName": "Spear",
         "itemID": 4,
-        "prefab": {
-            "instanceID": 0
-        },
+        "prefabPath": "",
         "itemType": 0
     },
     "weaponStats": {

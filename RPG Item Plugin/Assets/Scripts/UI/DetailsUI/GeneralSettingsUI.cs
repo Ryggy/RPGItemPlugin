@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
@@ -41,7 +42,15 @@ public class GeneralSettingsUI
         // Add change listeners to update the item data when fields are edited
         itemNameField.RegisterValueChangedCallback(evt => RPGItemCreator.UpdateItemName(evt.newValue));
         itemIDField.RegisterValueChangedCallback(evt => RPGItemCreator.UpdateItemID(evt.newValue));
-        prefabField.RegisterValueChangedCallback(evt => RPGItemCreator.UpdatePrefab(evt.newValue as GameObject));
+        prefabField.RegisterValueChangedCallback(evt =>
+        {
+            var selectedPrefab = evt.newValue as GameObject;
+            if (selectedPrefab != null)
+            {
+                string prefabPath = AssetDatabase.GetAssetPath(selectedPrefab);
+                RPGItemCreator.UpdatePrefabPath(prefabPath);
+            }
+        });
         itemTypeField.RegisterValueChangedCallback(evt => {
             // Parse the selected string back to ItemType
             if (Enum.TryParse(evt.newValue, out ItemType newItemType))
@@ -56,17 +65,16 @@ public class GeneralSettingsUI
         // Populate the fields with the item's data
         itemNameField.SetValueWithoutNotify(item.generalSettings.itemName);
         itemIDField.SetValueWithoutNotify(item.generalSettings.itemID);
-        prefabField.SetValueWithoutNotify(item.generalSettings.prefab);
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(item.generalSettings.prefabPath);
+        prefabField.SetValueWithoutNotify(prefab);
         itemTypeField.SetValueWithoutNotify(item.generalSettings.itemType.ToString());
     }
      
     public void ClearDetailPane()
     {
-        itemNameField.SetValueWithoutNotify("");
+        itemNameField.SetValueWithoutNotify(null);
         itemIDField.SetValueWithoutNotify(0);
         prefabField.SetValueWithoutNotify(null);
         itemTypeField.SetValueWithoutNotify(null);
     }
-    
-    
 }

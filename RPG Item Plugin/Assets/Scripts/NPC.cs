@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class NPC : MonoBehaviour
@@ -15,8 +16,8 @@ public class NPC : MonoBehaviour
     {
         _inventory = ItemSerialization.LoadItems(inventory);
         _mainHand = ItemSerialization.LoadItem(mainHand);
-
-        Instantiate(_mainHand.generalSettings.prefab, new Vector3(1f, 0f, 1f), Quaternion.identity, transform);
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(_mainHand.generalSettings.prefabPath);
+        Instantiate(prefab, new Vector3(1f, 0f, 1f), Quaternion.identity, transform);
     }
 
     private void Update()
@@ -35,6 +36,7 @@ public class NPC : MonoBehaviour
             {
                 Debug.Log($"{item.generalSettings.itemName} x {item.weaponStats.stackSize}");
             }
+            Debug.Log("-----------");
         }
     }
 }
