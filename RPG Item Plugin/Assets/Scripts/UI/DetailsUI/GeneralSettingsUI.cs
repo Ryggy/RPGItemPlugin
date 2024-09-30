@@ -75,6 +75,6 @@ public class GeneralSettingsUI
         itemNameField.SetValueWithoutNotify(null);
         itemIDField.SetValueWithoutNotify(0);
         prefabField.SetValueWithoutNotify(null);
-        itemTypeField.SetValueWithoutNotify(null);
+        itemTypeField.SetValueWithoutNotify(ItemType.Weapon.ToString());
     }
 }

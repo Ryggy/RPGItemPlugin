@@ -49,7 +49,10 @@ public class RPGItemCreator : EditorWindow
         splitView.Add(m_RightPane);
         detailsUI = new DetailsUI(m_RightPane);
         
-        SelectionUI.listViewPane.Rebuild();
+        // Rebuild the ListViews to reflect the changes
+        SelectionUI.weaponListView.Rebuild();
+        SelectionUI.armourListView.Rebuild();
+        SelectionUI.npcListView.Rebuild();
     }
 
     [MenuItem("Tools/RPGItemCreator")]
@@ -71,7 +74,9 @@ public class RPGItemCreator : EditorWindow
             Item item = SelectionUI._itemContainer.items[SelectionUI.selectedIndex];
             item.generalSettings.itemName = newItemName;
             SelectionUI._itemContainer.items[SelectionUI.selectedIndex] = item;
-            SelectionUI.listViewPane.Rebuild();  // Refresh the ListView
+            SelectionUI.weaponListView.Rebuild();
+            SelectionUI.armourListView.Rebuild();
+            SelectionUI.npcListView.Rebuild();
         }
     }
 
@@ -102,6 +107,10 @@ public class RPGItemCreator : EditorWindow
             var item = SelectionUI._itemContainer.items[SelectionUI.selectedIndex];
             item.generalSettings.prefabPath = prefabPath;
             SelectionUI._itemContainer.items[SelectionUI.selectedIndex] = item;
+            
+            SelectionUI.weaponListView.Rebuild();
+            SelectionUI.armourListView.Rebuild();
+            SelectionUI.npcListView.Rebuild();
         }
     }
 
@@ -112,6 +121,11 @@ public class RPGItemCreator : EditorWindow
             var item = SelectionUI._itemContainer.items[SelectionUI.selectedIndex];
             item.generalSettings.itemType = newItemType;
             SelectionUI._itemContainer.items[SelectionUI.selectedIndex] = item;
+            
+            // Rebuild the ListViews to reflect the changes
+            SelectionUI.weaponListView.Rebuild();
+            SelectionUI.armourListView.Rebuild();
+            SelectionUI.npcListView.Rebuild();
         }
     }
 

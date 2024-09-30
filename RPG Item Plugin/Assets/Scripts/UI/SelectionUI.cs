@@ -11,7 +11,12 @@ public class SelectionUI
     public static ItemContainer _itemContainer;
     public static int selectedIndex = -1;
     private TextField searchField;
-    public static ListView listViewPane;
+    
+    // Separate ListViews for each item type
+    public static ListView weaponListView;
+    public static ListView armourListView;
+    public static ListView npcListView;
+    
     public SelectionUI(VisualElement container, ItemContainer itemContainer)
     {
         _itemContainer = itemContainer;
@@ -19,7 +24,8 @@ public class SelectionUI
         BuildButtons(container);
         
         // Add a search bar above the ListView
-        searchField = new TextField("Search");    
+        searchField = new TextField("Search"); 
+        UIExtensions.ApplyHeaderStyle(searchField);
         searchField.style.marginTop = 10;
         searchField.style.marginLeft = 15;
         searchField.style.marginRight = 15;
@@ -28,41 +34,76 @@ public class SelectionUI
         
         searchField.RegisterValueChangedCallback(evt => FilterList(evt.newValue));
         
-        // add list of items
-        listViewPane = new ListView(_itemContainer.items, 75, MakeItem, BindItem);
-        listViewPane.selectionType = SelectionType.Single;
-        listViewPane.selectionChanged += OnListObjectSelected;
-        container.Add(listViewPane);  // Add the ListView below the search bar in the container
+        // Create foldouts for Weapons, Armour, and NPC
+        var weaponFoldout = new Foldout { text = "Weapons" };
+        var armourFoldout = new Foldout { text = "Armour" };
+        var npcFoldout = new Foldout { text = "NPC" };
+
+        // Create ListViews for each category
+        weaponListView = new ListView(GetItemsByType(ItemType.Weapon), 75, MakeItem, (e, i) => BindItem(e, i, weaponListView));
+        armourListView = new ListView(GetItemsByType(ItemType.Armour), 75, MakeItem, (e, i) => BindItem(e, i, armourListView));
+        npcListView = new ListView(GetItemsByType(ItemType.NPC), 75, MakeItem, (e, i) => BindItem(e, i, npcListView));
         
-        listViewPane.style.marginTop = 10;
-        listViewPane.style.marginLeft = 5;
-        listViewPane.style.marginRight = 5;
-        listViewPane.style.marginBottom = 10;
+        weaponListView.selectionType = SelectionType.Single;
+        armourListView.selectionType = SelectionType.Single;
+        npcListView.selectionType = SelectionType.Single;
+
+        weaponListView.selectionChanged += OnListObjectSelected;
+        armourListView.selectionChanged += OnListObjectSelected;
+        npcListView.selectionChanged += OnListObjectSelected;
+
+        // Add ListViews to their respective foldouts
+        weaponFoldout.Add(weaponListView);
+        armourFoldout.Add(armourListView);
+        npcFoldout.Add(npcListView);
+
+        // Add the foldouts to the container
+        container.Add(weaponFoldout);
+        container.Add(armourFoldout);
+        container.Add(npcFoldout);
+        
+        // Set ListView styles
+        weaponListView.style.marginTop = 10;
+        armourListView.style.marginTop = 10;
+        npcListView.style.marginTop = 10;
     }
     
     private void FilterList(string searchTerm)
     {
-        List<Item> filteredList;
+        // Filter the items based on the search term for each ListView
+        weaponListView.itemsSource = FilterItemsByType(ItemType.Weapon, searchTerm);
+        armourListView.itemsSource = FilterItemsByType(ItemType.Armour, searchTerm);
+        npcListView.itemsSource = FilterItemsByType(ItemType.NPC, searchTerm);
         
+        // Rebuild the ListViews to reflect the changes
+        weaponListView.Rebuild();
+        armourListView.Rebuild();
+        npcListView.Rebuild();
+    }
+    
+    private List<Item> FilterItemsByType(ItemType itemType, string searchTerm)
+    {
+        // Get the full item list for the specified item type
+        var fullList = GetItemsByType(itemType);
+
+        // If search term is empty, return the full list
         if (string.IsNullOrEmpty(searchTerm))
         {
-            // If search term is empty, show the full item list
-            filteredList = _itemContainer.items;
+            return fullList;
         }
-        else
-        {
-            // Filter items by name or ID
-            filteredList = _itemContainer.items
-                .Where(item => item.generalSettings.itemName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
-                               || item.generalSettings.itemID.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
+
+        // Filter items by name or ID
+        return fullList
+            .Where(item => item.generalSettings.itemName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                           || item.generalSettings.itemID.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
     
-        // Update the itemsSource of the ListView to the filtered list
-        listViewPane.itemsSource = filteredList;
-        
-        // Rebuild the ListView to reflect the changes
-        listViewPane.Rebuild();
+    private List<Item> GetItemsByType(ItemType itemType)
+    {
+        return _itemContainer.items
+            .Where(item => item.generalSettings.itemType == itemType)
+            .ToList();
     }
     
     private VisualElement MakeItem()
@@ -70,14 +111,14 @@ public class SelectionUI
         var itemElement = new VisualElement();
         itemElement.style.flexDirection = FlexDirection.Row;
         itemElement.style.alignItems = Align.FlexStart;
-        itemElement.style.alignItems = Align.Center; 
-        
+        itemElement.style.alignItems = Align.Center;
+
         // Create and configure the image
         var image = new Image();
         image.style.flexGrow = 0;
         image.style.flexShrink = 0;
         itemElement.Add(image);
-        
+
         var label = new Label();
         label.style.flexGrow = 1;
         UIExtensions.ApplyHeaderStyle(label);
@@ -86,30 +127,47 @@ public class SelectionUI
         return itemElement;
     }
     
-    private void BindItem(VisualElement element, int index)
+    private void BindItem(VisualElement element, int index, ListView listView)
     {
-        // Access the filtered list via the ListView's itemsSource
-        var item = (Item)listViewPane.itemsSource[index];
+        // Identify the item based on the ListView it belongs to (weapon, armor, or NPC)
+        Item item;
+        // set defaults
+        item.generalSettings.itemName = null;
+        item.generalSettings.prefabPath = null;
+        
+        // Check which ListView the item is being bound from
+        if (listView == weaponListView)
+        {
+            // Directly get the item from the weaponListView using the local index
+            item = (Item)weaponListView.itemsSource[index];
+        }
+        else if (listView == armourListView)
+        {
+            // Get the item from the armourListView
+            item = (Item)armourListView.itemsSource[index];
+        }
+        else if (listView == npcListView)
+        {
+            // Get the item from the npcListView
+            item = (Item)npcListView.itemsSource[index];
+        }
+
         var image = element.Q<Image>();
         var label = element.Q<Label>();
         
-        // Set item name
-        label.text = item.generalSettings.itemName; 
-        
-        // Check if prefab exists
-        if (item.generalSettings.prefabPath != null)
+        label.text = item.generalSettings.itemName;
+
+        // Check if prefab exists and assign the preview image
+        if (!string.IsNullOrEmpty(item.generalSettings.prefabPath))
         {
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(item.generalSettings.prefabPath);
-            // Get Texture2D preview of the prefab
             Texture2D prefabTexture = AssetPreview.GetAssetPreview(prefab);
 
             if (prefabTexture != null)
             {
-                // Create a sprite from the Texture2D
                 Rect spriteRect = new Rect(0, 0, prefabTexture.width, prefabTexture.height);
                 Sprite prefabSprite = Sprite.Create(prefabTexture, spriteRect, new Vector2(0.5f, 0.5f));
 
-                // Assign the sprite to the Image element
                 image.sprite = prefabSprite;
             }
         }
@@ -152,8 +210,7 @@ public class SelectionUI
         var loadButton = new Button(() =>
         {
             _itemContainer = ItemSerialization.LoadItems();
-            listViewPane.itemsSource = _itemContainer.items;
-            listViewPane.Rebuild();
+            FilterList(searchField.value);  // Refresh ListViews based on loaded items
             DetailsUI.ClearDetailPane();
         })
         {
@@ -190,7 +247,8 @@ public class SelectionUI
             {
                 itemName = "New Item",
                 itemID = _itemContainer.items.Count > 0 ? _itemContainer.items.Max(i => i.generalSettings.itemID) + 1 : 1,
-                prefabPath = null
+                prefabPath = null,
+                itemType = ItemType.Weapon // Default item type; can be modified later
             },
             weaponStats = new WeaponStats(),
             modifiers = new Modifiers(),
@@ -200,22 +258,19 @@ public class SelectionUI
         };
 
         _itemContainer.items.Add(newItem);
-        listViewPane.Rebuild();
-        listViewPane.selectedIndex = _itemContainer.items.Count - 1;
+        FilterList(searchField.value);  // Refresh ListViews based on new item
+        weaponListView.selectedIndex = _itemContainer.items.Count - 1; // Adjust to the relevant ListView
+        
+        
     }
     
     private void RemoveSelectedItem()
     {
         if (selectedIndex >= 0 && selectedIndex < _itemContainer.items.Count)
         {
-            // _itemContainer.items.RemoveAt(selectedIndex);
-            // listViewPane.Rebuild();
-            // selectedIndex = -1;
-            // DetailsUI.ClearDetailPane();
-            
             // Get the selected item
             Item selectedItem = _itemContainer.items[selectedIndex];
-        
+
             // Get the path to the item's JSON file
             string itemPath = ItemSerialization.GetItemPath(selectedItem);
             string metaFilePath = itemPath + ".meta";  // The corresponding meta file
@@ -238,8 +293,8 @@ public class SelectionUI
             // Refresh the AssetDatabase to apply the changes in Unity
             AssetDatabase.Refresh();
         
-            // Rebuild the ListView
-            listViewPane.Rebuild();
+            // Rebuild the ListViews
+            FilterList(searchField.value); // Refresh ListViews
             selectedIndex = -1;
         
             // Clear the details pane
