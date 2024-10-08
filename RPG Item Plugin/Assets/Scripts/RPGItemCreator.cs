@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 public class RPGItemCreator : EditorWindow
 {
     private ItemContainer itemContainer;
-    //private VisualElement m_RightPane;
+    private VisualElement m_RightPane;
 
     private SelectionUI selectionUI;
     private DetailsUI detailsUI;
@@ -45,7 +45,7 @@ public class RPGItemCreator : EditorWindow
         selectionUI = new SelectionUI(leftPaneContainer, itemContainer);
 
         // Right pane for item details
-        var m_RightPane = new VisualElement();
+        m_RightPane = new VisualElement();
         splitView.Add(m_RightPane);
         detailsUI = new DetailsUI(m_RightPane);
         

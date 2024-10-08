@@ -140,11 +140,11 @@ public class DetailsSegment
         foldout.contentContainer.RemoveAt(count-1);
     }
 }
-public enum FieldType
-{
-    TextField,
-    IntegerField,
-    FloatField,
-    Toggle,
-    DropdownField
-}
+// public enum FieldType
+// {
+//     TextField,
+//     IntegerField,
+//     FloatField,
+//     Toggle,
+//     DropdownField
+// }
