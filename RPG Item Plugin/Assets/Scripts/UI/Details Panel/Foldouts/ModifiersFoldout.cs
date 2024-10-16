@@ -88,35 +88,35 @@ public class ModifiersFoldout : ItemVariableFoldout
         ((FloatField)experienceMultiplierField.field).RegisterValueChangedCallback(evt => RPGItemCreator.UpdateExperienceMultiplier(evt.newValue));
     }
     
-public override void DisplayItemDetails(Item item)
-{
-    ((IntegerField)strengthField.field).SetValueWithoutNotify((int)item.modifiers.strength);
-    ((IntegerField)intelligenceField.field).SetValueWithoutNotify((int)item.modifiers.intelligence);
-    ((IntegerField)agilityField.field).SetValueWithoutNotify((int)item.modifiers.agility);
-    ((IntegerField)luckField.field).SetValueWithoutNotify((int)item.modifiers.luck);
-    ((IntegerField)maxHealthField.field).SetValueWithoutNotify((int)item.modifiers.maxHealth);
-    ((IntegerField)maxManaField.field).SetValueWithoutNotify((int)item.modifiers.maxMana);
-    ((FloatField)moveSpeedField.field).SetValueWithoutNotify(item.modifiers.moveSpeed);
-    ((FloatField)attackDamageField.field).SetValueWithoutNotify(item.modifiers.attackDamage);
-    ((FloatField)critChanceField.field).SetValueWithoutNotify(item.modifiers.critChance);
-    ((FloatField)critMultiplierField.field).SetValueWithoutNotify(item.modifiers.critMultiplier);
-    ((FloatField)damageReductionField.field).SetValueWithoutNotify(item.modifiers.damageReduction);
-    ((FloatField)experienceMultiplierField.field).SetValueWithoutNotify(item.modifiers.experienceMultiplier);
-}
+    public override void DisplayItemDetails(Item item)
+    {
+        ((IntegerField)strengthField.field).SetValueWithoutNotify((int)item.modifiers.strength);
+        ((IntegerField)intelligenceField.field).SetValueWithoutNotify((int)item.modifiers.intelligence);
+        ((IntegerField)agilityField.field).SetValueWithoutNotify((int)item.modifiers.agility);
+        ((IntegerField)luckField.field).SetValueWithoutNotify((int)item.modifiers.luck);
+        ((IntegerField)maxHealthField.field).SetValueWithoutNotify((int)item.modifiers.maxHealth);
+        ((IntegerField)maxManaField.field).SetValueWithoutNotify((int)item.modifiers.maxMana);
+        ((FloatField)moveSpeedField.field).SetValueWithoutNotify(item.modifiers.moveSpeed);
+        ((FloatField)attackDamageField.field).SetValueWithoutNotify(item.modifiers.attackDamage);
+        ((FloatField)critChanceField.field).SetValueWithoutNotify(item.modifiers.critChance);
+        ((FloatField)critMultiplierField.field).SetValueWithoutNotify(item.modifiers.critMultiplier);
+        ((FloatField)damageReductionField.field).SetValueWithoutNotify(item.modifiers.damageReduction);
+        ((FloatField)experienceMultiplierField.field).SetValueWithoutNotify(item.modifiers.experienceMultiplier);
+    }
 
-public override void ClearDetailPane()
-{
-    ((IntegerField)strengthField.field).SetValueWithoutNotify(0);
-    ((IntegerField)intelligenceField.field).SetValueWithoutNotify(0);
-    ((IntegerField)agilityField.field).SetValueWithoutNotify(0);
-    ((IntegerField)luckField.field).SetValueWithoutNotify(0);
-    ((IntegerField)maxHealthField.field).SetValueWithoutNotify(0);
-    ((IntegerField)maxManaField.field).SetValueWithoutNotify(0);
-    ((FloatField)moveSpeedField.field).SetValueWithoutNotify(0f);
-    ((FloatField)attackDamageField.field).SetValueWithoutNotify(0f);
-    ((FloatField)critChanceField.field).SetValueWithoutNotify(0f);
-    ((FloatField)critMultiplierField.field).SetValueWithoutNotify(0f);
-    ((FloatField)damageReductionField.field).SetValueWithoutNotify(0f);
-    ((FloatField)experienceMultiplierField.field).SetValueWithoutNotify(0f);
-}
+    public override void ClearDetailPane()
+    {
+        ((IntegerField)strengthField.field).SetValueWithoutNotify(0);
+        ((IntegerField)intelligenceField.field).SetValueWithoutNotify(0);
+        ((IntegerField)agilityField.field).SetValueWithoutNotify(0);
+        ((IntegerField)luckField.field).SetValueWithoutNotify(0);
+        ((IntegerField)maxHealthField.field).SetValueWithoutNotify(0);
+        ((IntegerField)maxManaField.field).SetValueWithoutNotify(0);
+        ((FloatField)moveSpeedField.field).SetValueWithoutNotify(0f);
+        ((FloatField)attackDamageField.field).SetValueWithoutNotify(0f);
+        ((FloatField)critChanceField.field).SetValueWithoutNotify(0f);
+        ((FloatField)critMultiplierField.field).SetValueWithoutNotify(0f);
+        ((FloatField)damageReductionField.field).SetValueWithoutNotify(0f);
+        ((FloatField)experienceMultiplierField.field).SetValueWithoutNotify(0f);
+    }
 }

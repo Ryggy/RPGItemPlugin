@@ -48,6 +48,25 @@ public class SelectionUI
         armourListView.selectionType = SelectionType.Single;
         npcListView.selectionType = SelectionType.Single;
 
+        // work around to ensure it registers clicks properly 
+        // needs BOTH itemsChosen and selectionChanged, even if empty
+        // https://discussions.unity.com/t/i-cant-select-listview-items-on-uielements-runtime/786109/12
+        weaponListView.itemsChosen += (IEnumerable<object> selectedRows) =>
+        {
+            //Debug.Log($"itemsChosen for Weapons: {selectedRows.Count()}");
+        };
+
+        armourListView.itemsChosen += (IEnumerable<object> selectedRows) =>
+        {
+           // Debug.Log($"itemsChosen for Armour: {selectedRows.Count()}");
+        };
+
+        npcListView.itemsChosen += (IEnumerable<object> selectedRows) =>
+        {
+            //Debug.Log($"itemsChosen for NPC: {selectedRows.Count()}");
+        };
+
+        // actual selection changed logic
         weaponListView.selectionChanged += OnListObjectSelected;
         armourListView.selectionChanged += OnListObjectSelected;
         npcListView.selectionChanged += OnListObjectSelected;
