@@ -337,11 +337,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a0b0ff6bc26d7d44aa9d5b2accb4b80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainHand: {fileID: 4900000, guid: 27a165536ff05da42983c8127609bfc4, type: 3}
+  mainHand: {fileID: 4900000, guid: 27eb2bb7f78baea44811ebf28081efed, type: 3}
   inventory:
-  - {fileID: 4900000, guid: 27a165536ff05da42983c8127609bfc4, type: 3}
-  - {fileID: 4900000, guid: 8c463037a4ddab74d8aa4c80db1412c7, type: 3}
-  - {fileID: 4900000, guid: 51c585c29c2b7be4984cd72ff4535100, type: 3}
+  - {fileID: 4900000, guid: 27eb2bb7f78baea44811ebf28081efed, type: 3}
+  - {fileID: 4900000, guid: 180f63b97a4643c4f9667bec13c7fdd0, type: 3}
+  - {fileID: 4900000, guid: bfc334f8994b7074d855e378683d5fdd, type: 3}
+  - {fileID: 4900000, guid: a9a76365d3f5cb84f978bfbb4b6dd4cc, type: 3}
+  - {fileID: 4900000, guid: e0d8cf224b1f0a343adb2b6de52d3a4b, type: 3}
 --- !u!4 &1070466896
 Transform:
   m_ObjectHideFlags: 0
