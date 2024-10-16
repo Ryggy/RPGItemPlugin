@@ -53,17 +53,17 @@ public class SelectionUI
         // https://discussions.unity.com/t/i-cant-select-listview-items-on-uielements-runtime/786109/12
         weaponListView.itemsChosen += (IEnumerable<object> selectedRows) =>
         {
-            //Debug.Log($"itemsChosen for Weapons: {selectedRows.Count()}");
+            Debug.Log($"itemsChosen for Weapons: {selectedRows.Count()}");
         };
 
         armourListView.itemsChosen += (IEnumerable<object> selectedRows) =>
         {
-           // Debug.Log($"itemsChosen for Armour: {selectedRows.Count()}");
+           Debug.Log($"itemsChosen for Armour: {selectedRows.Count()}");
         };
 
         npcListView.itemsChosen += (IEnumerable<object> selectedRows) =>
         {
-            //Debug.Log($"itemsChosen for NPC: {selectedRows.Count()}");
+            Debug.Log($"itemsChosen for NPC: {selectedRows.Count()}");
         };
 
         // actual selection changed logic
@@ -87,7 +87,7 @@ public class SelectionUI
         npcListView.style.marginTop = 10;
     }
     
-    private void FilterList(string searchTerm)
+    public static void FilterList(string searchTerm)
     {
         // Filter the items based on the search term for each ListView
         weaponListView.itemsSource = FilterItemsByType(ItemType.Weapon, searchTerm);
@@ -100,7 +100,7 @@ public class SelectionUI
         npcListView.Rebuild();
     }
     
-    private List<Item> FilterItemsByType(ItemType itemType, string searchTerm)
+    private static List<Item> FilterItemsByType(ItemType itemType, string searchTerm)
     {
         // Get the full item list for the specified item type
         var fullList = GetItemsByType(itemType);
@@ -118,7 +118,7 @@ public class SelectionUI
             .ToList();
     }
     
-    private List<Item> GetItemsByType(ItemType itemType)
+    private static List<Item> GetItemsByType(ItemType itemType)
     {
         return _itemContainer.items
             .Where(item => item.generalSettings.itemType == itemType)
@@ -206,6 +206,8 @@ public class SelectionUI
             selectedIndex = -1;
             DetailsUI.ClearDetailPane();
         }
+        
+        
     }
     
     private void BuildButtons(VisualElement container)

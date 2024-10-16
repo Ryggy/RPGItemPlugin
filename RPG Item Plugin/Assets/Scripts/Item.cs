@@ -6,7 +6,8 @@ using UnityEngine.Serialization;
 public enum ItemType{
     Weapon,
     Armour,
-    NPC
+    NPC,
+    None
 }
 
 [System.Serializable]

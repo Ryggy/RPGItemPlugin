@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 public class DetailsUI
 {
-    // Define foldout templates as a dictionary for easier management
+    // Define foldout templates as a dictionary
     private static Dictionary<string, System.Func<VisualElement, ItemVariableFoldout>> allFoldoutTemplates = new Dictionary<string, System.Func<VisualElement, ItemVariableFoldout>>
     {
         { "General Settings", (container) => new GeneralSettingsFoldOut("General Settings", FieldType.TextField, container) },
@@ -37,19 +37,34 @@ public class DetailsUI
         { "Notes", (container) => new NotesFoldout("Notes", FieldType.TextField, container) },
     };
     
+    private static Dictionary<string, System.Func<VisualElement, ItemVariableFoldout>> NPCFoldoutTemplate = new Dictionary<string, System.Func<VisualElement, ItemVariableFoldout>>
+    {
+        { "General Settings", (container) => new GeneralSettingsFoldOut("General Settings", FieldType.TextField, container) },
+        { "Description", (container) => new DescriptionFoldout("Description", FieldType.TextField, container) },
+        { "Notes", (container) => new NotesFoldout("Notes", FieldType.TextField, container) },
+    };
+
+    public static VisualElement leftDetailsPane;
+    public static VisualElement rightDetailsPane;
+    private static ItemType currentDisplayedItemType = ItemType.None;
     
     // List to track created foldouts
     private static List<ItemVariableFoldout> foldouts = new List<ItemVariableFoldout>();
 
     public DetailsUI(VisualElement container)
     {
+        VisualElement foldoutSelectorContainer = new VisualElement();
+        //foldoutSelectorContainer.style.flexDirection = FlexDirection.Row;
+        foldoutSelectorContainer.style.alignItems = Align.FlexEnd; 
+        container.Add(foldoutSelectorContainer);
+        
         // Create a two-pane view with the left pane being fixed.
         var detailsSplitView = new TwoPaneSplitView(0, 600, TwoPaneSplitViewOrientation.Horizontal);
         container.Add(detailsSplitView);
-        
+
         // Add two child elements to the TwoPaneSplitView
-        VisualElement leftDetailsPane = new ScrollView();
-        VisualElement rightDetailsPane = new ScrollView();
+        leftDetailsPane = new ScrollView();
+        rightDetailsPane = new ScrollView();
  
         detailsSplitView.Add(leftDetailsPane);
         detailsSplitView.Add(rightDetailsPane);
@@ -65,14 +80,17 @@ public class DetailsUI
         rightDetailsPane.style.marginBottom = 10;
         
         // Initialize the foldouts
-        InitializeFoldouts(leftDetailsPane, rightDetailsPane);
+        //InitialiseWeaponFoldouts(leftDetailsPane, rightDetailsPane);
         
-        AddFoldoutButtons(container, leftDetailsPane, rightDetailsPane);
+        AddFoldoutButtons(foldoutSelectorContainer, leftDetailsPane, rightDetailsPane);
         //var detailsSegment = new DetailsSegment(rightDetailsPane);
     }
 
-    private void InitializeFoldouts(VisualElement leftDetailsPane, VisualElement rightDetailsPane)
+    private static void InitialiseWeaponFoldouts(VisualElement leftDetailsPane, VisualElement rightDetailsPane)
     {
+        leftDetailsPane.Clear();
+        rightDetailsPane.Clear();
+        
         int index = 0;
         foreach (var template in weaponFoldoutTemplate)
         {
@@ -85,22 +103,77 @@ public class DetailsUI
 
             // Increment index to switch panes on the next iteration
             index++;
-            
+        }
+    }
+    
+    private static void InitialiseArmourFoldouts(VisualElement leftDetailsPane, VisualElement rightDetailsPane)
+    {
+        leftDetailsPane.Clear();
+        rightDetailsPane.Clear();
+        
+        int index = 0;
+        foreach (var template in armourFoldoutTemplate)
+        {
+            // Alternate between left and right panes
+            var targetPane = (index % 2 == 0) ? leftDetailsPane : rightDetailsPane;
+
+            // Create the foldout using the target pane
+            var foldout = template.Value(targetPane);
+            foldouts.Add(foldout);
+
+            // Increment index to switch panes on the next iteration
+            index++;
+        }
+    }
+    
+    private static void InitialiseNPCFoldouts(VisualElement leftDetailsPane, VisualElement rightDetailsPane)
+    {
+        leftDetailsPane.Clear();
+        rightDetailsPane.Clear();
+        
+        int index = 0;
+        foreach (var template in NPCFoldoutTemplate)
+        {
+            // Alternate between left and right panes
+            var targetPane = (index % 2 == 0) ? leftDetailsPane : rightDetailsPane;
+
+            // Create the foldout using the target pane
+            var foldout = template.Value(targetPane);
+            foldouts.Add(foldout);
+
+            // Increment index to switch panes on the next iteration
+            index++;
         }
     }
     
     private void AddFoldoutButtons(VisualElement container, VisualElement leftDetailsPane, VisualElement rightDetailsPane)
     {
+        VisualElement foldoutSelectionContainer = new VisualElement();
+        foldoutSelectionContainer.style.flexDirection = FlexDirection.Row;
+        foldoutSelectionContainer.style.alignItems = Align.Center;
+        container.Add(foldoutSelectionContainer);
+        
         // Filter out the "General Settings" foldout from the dropdown choices.
-        // Items must have a general settings
         var filteredTemplates = allFoldoutTemplates.Keys.ToList().Where(key => key != "General Settings").ToList();
         
         // Dropdown to select foldout template
         var foldoutDropdown = new PopupField<string>("Select Foldout Template", filteredTemplates, 0)
         {
-            style = { marginTop = 10 }
+            style =
+            {
+                marginTop = 10, 
+            }
+            
         };
-        container.Add(foldoutDropdown);
+        // set the min width for the drop down so it doesnt change with different text
+        foldoutDropdown.ElementAt(1).style.minWidth = 200;
+        foldoutSelectionContainer.Add(foldoutDropdown);
+        
+        // Create a spacer 
+        var spacer = new VisualElement();
+        spacer.style.flexGrow = 1; // Allow spacer to take available space
+        spacer.style.flexShrink = 1;
+        foldoutSelectionContainer.Add(spacer);
         
         // Button to create the selected foldout
         var createFoldoutButton = new Button(() =>
@@ -129,39 +202,30 @@ public class DetailsUI
             }
         })
         {
-            text = "Create Foldout"
+            text = "+"
         };
-        container.Add(createFoldoutButton);
-        
-        // Filter out the "General Settings" foldout from the dropdown choices.
-        // Items must have a general settings
-        var filteredFoldouts = foldouts.Where(foldout => foldout.foldoutName != "General Settings").ToList();
-
-        // Add a dropdown to select a foldout to remove, excluding "General Settings"
-        var removeFoldoutDropdown = new PopupField<ItemVariableFoldout>("Select Foldout to Remove", filteredFoldouts, 0,
-            foldout => foldout?.foldoutName, foldout => foldout?.foldoutName)
-        {
-            style = { marginTop = 10 }
-        };
-        container.Add(removeFoldoutDropdown);
+        createFoldoutButton.style.maxHeight = 30;
+        foldoutSelectionContainer.Add(createFoldoutButton);
         
         // Add a button to remove the selected foldout
         var removeFoldoutButton = new Button(() =>
         {
             if (foldouts.Any())
             {
-                var selectedFoldout = removeFoldoutDropdown.value;
+                var selectedFoldoutName = foldoutDropdown.value;
+
+                // Find the corresponding foldout in the foldouts list by name
+                var selectedFoldout = foldouts.FirstOrDefault(f => f.foldoutName == selectedFoldoutName);
+
                 if (selectedFoldout != null)
                 {
                     // Check which pane the foldout is in by examining the parent element
                     if (selectedFoldout.foldoutElement.parent == leftDetailsPane)
                     {
-                        // If the foldout is in the left pane, remove it from the left pane
                         leftDetailsPane.Remove(selectedFoldout.foldoutElement);
                     }
                     else if (selectedFoldout.foldoutElement.parent == rightDetailsPane)
                     {
-                        // If the foldout is in the right pane, remove it from the right pane
                         rightDetailsPane.Remove(selectedFoldout.foldoutElement);
                     }
 
@@ -169,18 +233,43 @@ public class DetailsUI
                     foldouts.Remove(selectedFoldout);
 
                     // Update the dropdown choices to reflect the remaining foldouts
-                    removeFoldoutDropdown.choices = foldouts;
+                    foldoutDropdown.choices = foldouts.Select(f => f.foldoutName).ToList();
                 }
             }
         })
         {
-            text = "Remove Selected Foldout"
+            text = "-"
         };
-        container.Add(removeFoldoutButton);
+        removeFoldoutButton.style.maxHeight = 30;
+        foldoutSelectionContainer.Add(removeFoldoutButton);
     }
 
     public static void DisplayItemDetails(Item item)
     {
+        // Check if the currently displayed item type matches the new item's type
+        if (currentDisplayedItemType != item.generalSettings.itemType)
+        {
+            // Reinitialize the foldouts based on the new item type
+            switch (item.generalSettings.itemType)
+            {
+                case ItemType.Weapon:
+                    InitialiseWeaponFoldouts(leftDetailsPane, rightDetailsPane);
+                    break;
+                case ItemType.Armour:
+                    InitialiseArmourFoldouts(leftDetailsPane, rightDetailsPane);
+                    break;
+                case ItemType.NPC:
+                    InitialiseNPCFoldouts(leftDetailsPane, rightDetailsPane);
+                    break;
+                default:
+                    Debug.LogWarning("Unknown ItemType. Foldouts not initialized.");
+                    break;
+            }
+
+            // Update the current displayed item type to the new one
+            currentDisplayedItemType = item.generalSettings.itemType;
+        }
+        
         foreach (ItemVariableFoldout foldout in foldouts)
         {
             foldout.DisplayItemDetails(item);

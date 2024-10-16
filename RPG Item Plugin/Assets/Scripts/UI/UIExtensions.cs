@@ -52,7 +52,6 @@ public static class UIExtensions
                 OnDoubleClick(label);  // Call OnDoubleClick if double-click detected
             }
         });
-
         
         // Create a spacer to push the input field to the end
         var spacer = new VisualElement();
