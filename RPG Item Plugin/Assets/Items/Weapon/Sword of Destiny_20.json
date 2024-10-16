@@ -1,14 +1,14 @@
 {
     "generalSettings": {
-        "itemName": "Saber",
-        "itemID": 12,
+        "itemName": "Sword of Destiny",
+        "itemID": 20,
         "prefabPath": "Assets/Prefabs/Saber.prefab",
         "itemType": 0
     },
     "weaponStats": {
-        "stackSize": 0,
+        "stackSize": 1,
         "rarity": 0,
-        "attackPower": 10,
+        "attackPower": 99,
         "attackSpeed": 0.0,
         "range": 0.0,
         "durability": 0.0

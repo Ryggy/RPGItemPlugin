@@ -1,35 +1,35 @@
 {
     "generalSettings": {
-        "itemName": "Saber",
-        "itemID": 12,
-        "prefabPath": "Assets/Prefabs/Saber.prefab",
+        "itemName": "Axe",
+        "itemID": 1,
+        "prefabPath": "Assets/Prefabs/Axe.prefab",
         "itemType": 0
     },
     "weaponStats": {
-        "stackSize": 0,
-        "rarity": 0,
-        "attackPower": 10,
-        "attackSpeed": 0.0,
-        "range": 0.0,
-        "durability": 0.0
+        "stackSize": 1,
+        "rarity": 1,
+        "attackPower": 1,
+        "attackSpeed": 1.0,
+        "range": 1.0,
+        "durability": 100.0
     },
     "modifiers": {
-        "strength": 0,
+        "strength": 10,
         "intelligence": 0,
         "agility": 0,
         "luck": 0,
         "maxHealth": 0,
         "maxMana": 0,
         "moveSpeed": 0.0,
-        "attackDamage": 0.0,
-        "critChance": 0.0,
-        "critMultiplier": 0.0,
+        "attackDamage": 10.0,
+        "critChance": 1.0,
+        "critMultiplier": 1.0,
         "damageReduction": 0.0,
         "experienceMultiplier": 0.0
     },
     "description": {
-        "shortDescription": "",
-        "detailedDescription": ""
+        "shortDescription": "An iron axe",
+        "detailedDescription": "An iron axe you stole from the local lumberjack"
     },
     "notes": {
         "developerNotes": ""
@@ -38,7 +38,7 @@
         "requiredLevel": 0,
         "requiredClass": "",
         "requiresTwoHands": false,
-        "strengthRequirement": 0,
+        "strengthRequirement": 5,
         "intelligenceRequirement": 0,
         "agilityRequirement": 0,
         "luckRequirement": 0

@@ -6,7 +6,7 @@
         "itemType": 0
     },
     "weaponStats": {
-        "stackSize": 0,
+        "stackSize": 1,
         "rarity": 0,
         "attackPower": 0,
         "attackSpeed": 0.0,

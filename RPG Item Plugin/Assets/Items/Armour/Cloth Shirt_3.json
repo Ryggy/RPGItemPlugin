@@ -1,14 +1,14 @@
 {
     "generalSettings": {
-        "itemName": "Saber",
-        "itemID": 12,
-        "prefabPath": "Assets/Prefabs/Saber.prefab",
-        "itemType": 0
+        "itemName": "Cloth Shirt",
+        "itemID": 3,
+        "prefabPath": "Assets/Prefabs/ClothShirt.prefab",
+        "itemType": 1
     },
     "weaponStats": {
         "stackSize": 0,
         "rarity": 0,
-        "attackPower": 10,
+        "attackPower": 0,
         "attackSpeed": 0.0,
         "range": 0.0,
         "durability": 0.0
